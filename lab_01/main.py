@@ -51,7 +51,7 @@ ax.set_xlabel("iteration")
 ax.set_ylabel("best value")
 ax.legend()
 plt.show()
-"""
+
 
 gs_easom_1 = GeneticSolver(easom, 100, 200, 2, [[-100, 100],[-100, 100]], 0.25, 0.25, True)
 gs_easom_1.anisolve(100)
@@ -87,6 +87,69 @@ ax = fig.add_subplot()
 ax.plot(range(len(stat_1)), stat_1, "b", label = "перший набір")
 ax.plot(range(len(stat_2)), stat_2, "r", label = "другий набір")
 ax.plot(range(len(stat_3)), stat_3, "g", label = "третій набір")
+ax.set_xlabel("iteration")
+ax.set_ylabel("best value")
+ax.legend()
+plt.show()
+
+
+
+gs_gp_1 = GeneticSolver(goldstein_price, 10, 20, 2, [[-2, 2],[-2, 2]], 0.1, 0.1, True)
+gs_gp_1.anisolve(100)
+gs_gp_1.reset()
+gs_gp_1.solve_stats(100, True, 5, 0.001, True)
+
+gs_gp_2 = GeneticSolver(goldstein_price, 5, 5, 2, [[-2, 2],[-2, 2]], 0.1, 0.1, True)
+gs_gp_2.anisolve(50)
+gs_gp_2.reset()
+gs_gp_2.solve_stats(50, True, 5, 0.001, True)
+
+stat_1 = []
+stat_2 = []
+for _ in tqdm(range(100), desc = "gs compare"):
+    gs_gp_1.reset()
+    stat_1.append([gs_gp_1.solve_stats(100, False, 5, 0, False)])
+    gs_gp_2.reset()
+    stat_2.append([gs_gp_2.solve_stats(50, False, 5, 0)])
+stat_1 = np.mean(stat_1, axis = 0)[0]
+stat_2 = np.mean(stat_2, axis = 0)[0]
+
+fig = plt.figure()
+ax = fig.add_subplot()
+ax.plot(range(len(stat_1)), stat_1, "b", label = "перший набір")
+ax.plot(range(len(stat_2)), stat_2, "r", label = "другий набір")
+ax.set_xlabel("iteration")
+ax.set_ylabel("best value")
+ax.legend()
+plt.show()
+"""
+
+
+gs_cb_1 = GeneticSolver(camel, 10, 20, 2, [[-2, 2],[-2, 2]], 0.1, 0.1, True)
+gs_cb_1.anisolve(100)
+gs_cb_1.reset()
+gs_cb_1.solve_stats(100, True, 5, 0.001, True)
+
+gs_cb_2 = GeneticSolver(camel, 40, 40, 2, [[-2, 2],[-2, 2]], 0.1, 0.1, True)
+gs_cb_2.anisolve(25)
+gs_cb_2.reset()
+gs_cb_2.solve_stats(25, True, 5, 0.001, True)
+
+
+stat_1 = []
+stat_2 = []
+for _ in tqdm(range(100), desc = "gs compare"):
+    gs_cb_1.reset()
+    stat_1.append([gs_cb_1.solve_stats(100, False, 5, 0, False)])
+    gs_cb_2.reset()
+    stat_2.append([gs_cb_2.solve_stats(20, False, 5, 0)])
+stat_1 = np.mean(stat_1, axis = 0)[0]
+stat_2 = np.mean(stat_2, axis = 0)[0]
+
+fig = plt.figure()
+ax = fig.add_subplot()
+ax.plot(range(len(stat_1)), stat_1, "b", label = "перший набір")
+ax.plot(range(len(stat_2)), stat_2, "r", label = "другий набір")
 ax.set_xlabel("iteration")
 ax.set_ylabel("best value")
 ax.legend()
