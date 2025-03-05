@@ -1,5 +1,9 @@
 from random import random
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import matplotlib.cm as cm
+import numpy as np
 
 class GeneticSolver:
     def __init__(self, func, pop_size, children, dimensions, minmax, mutation_prob, mutation_pow, seeking_min = False):
@@ -55,12 +59,87 @@ class GeneticSolver:
             old_best = self.pop[0]
             self.iter()
 
-            if self.func(self.pop[0]) - self.func(old_best) >= epsilon * (-1) ** self.seeking_min:
+            if self.func(self.pop[0]) - self.func(old_best) >= epsilon and not self.seeking_min:
+                epsilon_timeout_counter = 0
+            elif self.func(old_best) - self.func(self.pop[0]) >= epsilon and self.seeking_min:
                 epsilon_timeout_counter = 0
             else:
                 epsilon_timeout_counter += 1
                 if epsilon_timeout_counter > epsilon_timeout:
-                    self.select()
-                    return self.pop[0]
+                    break
         self.select()
-        return self.pop[0]
+        return (self.func(self.pop[0]), self.pop[0])
+
+    def solve_stats(self, iterations, progressbar = True, epsilon_timeout = float("inf"), epsilon = 0):
+        y = []
+        if progressbar:
+            iterator = tqdm(range(iterations))
+        else:
+            iterator = range(iterations)
+        epsilon_timeout_counter = 0
+
+        for _ in iterator:
+            old_best = self.pop[0]
+            self.select()
+            y.append(self.func(self.pop[0]))
+            self.crossover()
+            self.mutate()
+
+            if self.func(self.pop[0]) - self.func(old_best) >= epsilon and not self.seeking_min:
+                epsilon_timeout_counter = 0
+            elif self.func(old_best) - self.func(self.pop[0]) >= epsilon and self.seeking_min:
+                epsilon_timeout_counter = 0
+            else:
+                epsilon_timeout_counter += 1
+                if epsilon_timeout_counter > epsilon_timeout:
+                    break
+        self.select()
+        y.append(self.func(self.pop[0]))
+        x = range(len(y))
+        plt.plot(x[100:],y[100:])
+        plt.yscale("log")
+        plt.show()
+        return (self.func(self.pop[0]), self.pop[0])
+
+    def anisolve(self, iterations):
+        if self.dimensions != 2:
+            raise Exception("GeneticSolver.anisolve can visualise only 2d functions")
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d",computed_zorder=False)
+        ax.set_xlabel("X-axis")
+        ax.set_ylabel("Y-axis")
+        ax.set_zlabel("Z-axis")
+
+        func_x = np.linspace(self.minmax[0][0], self.minmax[0][1], 25)
+        func_y = np.linspace(self.minmax[1][0], self.minmax[1][1], 25)
+        FUNC_X, FUNC_Y = np.meshgrid(func_x, func_y)
+        FUNC_Z = self.func([FUNC_X, FUNC_Y])
+
+        ax.plot_surface(FUNC_X, FUNC_Y, FUNC_Z, cmap=cm.coolwarm,
+                       linewidth=0, antialiased=False, zorder = 0)
+        dots = ax.scatter([], [], [], c="#ff0000", zorder=5, label="Population")
+        prime = ax.scatter([], [], [], s=75, c="#ffff00", zorder=10, label="Best Individual")
+
+        ax.legend()
+        ax.grid(True)
+
+        def update(frame):
+            self.select()
+            fig.suptitle("Genetic" + str(frame + 1) + "/" + str(iterations) + " Best: " + str(
+                round(self.func(self.pop[0]), 12)))
+            x_coords = [p[0] for p in self.pop]
+            y_coords = [p[1] for p in self.pop]
+            z_coords = [self.func(p) for p in self.pop]
+
+            dots._offsets3d = (x_coords, y_coords, z_coords)
+            prime._offsets3d = ([self.pop[0][0]],
+                                [self.pop[0][1]],
+                                [self.func(self.pop[0])])
+            self.crossover()
+            self.mutate()
+            return dots, prime
+
+        # writervideo = animation.PillowWriter(fps=2, bitrate=1800)
+        ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval=100)
+        # ani.save("gifs/wolf_latest.gif", writer = writervideo)
+        plt.show()
