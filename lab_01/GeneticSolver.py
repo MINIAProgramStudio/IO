@@ -20,6 +20,9 @@ class GeneticSolver:
         #створюємо хромосоми
         self.pop = [[random()*(minmax[d][1] - minmax[d][0]) + minmax[d][0] for d in range(dimensions)] for _ in range(pop_size)]
 
+    def reset(self):
+        self.pop = [[random() * (self.minmax[d][1] - self.minmax[d][0]) + self.minmax[d][0] for d in range(self.dimensions)] for _ in range(self.pop_size)]
+
     def select(self):
         self.pop = sorted(self.pop, key = self.func, reverse = not self.seeking_min) # відсортувати хромосоми за фітнес-функцією
         self.pop = self.pop[:self.pop_size] # залишити лише найкращі хромосоми у кількості pop_size штук
@@ -70,7 +73,7 @@ class GeneticSolver:
         self.select()
         return (self.func(self.pop[0]), self.pop[0])
 
-    def solve_stats(self, iterations, progressbar = True, epsilon_timeout = float("inf"), epsilon = 0):
+    def solve_stats(self, iterations, progressbar = True, epsilon_timeout = float("inf"), epsilon = 0, show = False):
         y = []
         if progressbar:
             iterator = tqdm(range(iterations))
@@ -95,13 +98,18 @@ class GeneticSolver:
                     break
         self.select()
         y.append(self.func(self.pop[0]))
-        x = range(len(y))
-        plt.plot(x[100:],y[100:])
-        plt.yscale("log")
-        plt.show()
-        return (self.func(self.pop[0]), self.pop[0])
+        if show:
+            x = range(len(y))
+            fig = plt.figure()
+            ax = fig.add_subplot()
+            ax.plot(x[:],y[:])
+            # plt.yscale("log")
+            ax.set_xlabel("iteration")
+            ax.set_ylabel("best value")
+            plt.show()
+        return y
 
-    def anisolve(self, iterations):
+    def anisolve(self, iterations, save = False):
         if self.dimensions != 2:
             raise Exception("GeneticSolver.anisolve can visualise only 2d functions")
         fig = plt.figure()
@@ -110,8 +118,8 @@ class GeneticSolver:
         ax.set_ylabel("Y-axis")
         ax.set_zlabel("Z-axis")
 
-        func_x = np.linspace(self.minmax[0][0], self.minmax[0][1], 25)
-        func_y = np.linspace(self.minmax[1][0], self.minmax[1][1], 25)
+        func_x = np.linspace(self.minmax[0][0], self.minmax[0][1], 106)
+        func_y = np.linspace(self.minmax[1][0], self.minmax[1][1], 106)
         FUNC_X, FUNC_Y = np.meshgrid(func_x, func_y)
         FUNC_Z = self.func([FUNC_X, FUNC_Y])
 
@@ -137,9 +145,13 @@ class GeneticSolver:
                                 [self.func(self.pop[0])])
             self.crossover()
             self.mutate()
+            if frame >= iterations - 1:
+                ani.pause()
             return dots, prime
-
-        # writervideo = animation.PillowWriter(fps=2, bitrate=1800)
-        ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval=100)
-        # ani.save("gifs/wolf_latest.gif", writer = writervideo)
-        plt.show()
+        if save:
+            writervideo = animation.PillowWriter(fps=5, bitrate=1800)
+            ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval=100)
+            ani.save("gifs/genetic_latest.gif", writer = writervideo)
+        else:
+            ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval=100)
+            plt.show()
