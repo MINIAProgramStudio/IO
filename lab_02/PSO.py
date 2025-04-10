@@ -140,8 +140,11 @@ class PSOSolver:
             ani = animation.FuncAnimation(fig=fig, func=update, frames=iterations, interval=50)
             if save:
                 writervideo = animation.PillowWriter(fps=2, bitrate=1800)
-                ani.save("gifs/pso_latest.gif", writer = writervideo)
-            plt.show()
+                ani.save("gifs/pso_"+str(int(time()))+"_.gif", writer = writervideo)
+                plt.show(block=False)
+                plt.close("all")
+            else:
+                plt.show()
             return (self.best_val, self.best_pos)
         else:
             px = list(range(iterations + 1))
@@ -155,7 +158,7 @@ class PSOSolver:
 
             graph = ax.plot(px, py)[0]
             if save:
-                plt.savefig("gifs/pso_lates.png")
+                plt.savefig("gifs/pso_latest.png")
             plt.show()
             return (self.best_val, self.best_pos)
 
