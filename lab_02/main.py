@@ -55,7 +55,7 @@ def styrblinski_tang(pos):
         output += pos[i] ** 4 - 16 * pos[i] ** 2 + 5 * pos[i]
     return output/2
 
-""""""
+
 ackley_pso_1 = PSOSolver({
     "a1": 0.1,#acceleration number
     "a2": 0.2,#acceleration number
@@ -67,7 +67,7 @@ ackley_pso_1 = PSOSolver({
     "speed_max": np.array([1,1]),#vector of max speed
 }, ackley, True)
 
-ackley_pso_1.anisolve(save=True)
+ackley_pso_1.anisolve(save=False)
 
 ackley_pso_2 = PSOSolver({
     "a1": 0.01,#acceleration number
@@ -80,7 +80,7 @@ ackley_pso_2 = PSOSolver({
     "speed_max": np.array([1,1]),#vector of max speed
 }, ackley, True)
 
-ackley_pso_2.anisolve(save=True)
+ackley_pso_2.anisolve(save=False)
 
 a_1 = test_mean(ackley_pso_1, ITERATIONS, TESTS, "ackley_1")
 a_2 = test_mean(ackley_pso_2, ITERATIONS, TESTS, "ackley_2")
@@ -101,7 +101,7 @@ rosenbroke_pso_1 = PSOSolver({
     "speed_max": np.array([10**8,10**8]),#vector of max speed
 }, rosenbroke, True)
 
-rosenbroke_pso_1.anisolve(save=True)
+rosenbroke_pso_1.anisolve(save=False)
 
 rosenbroke_pso_2 = PSOSolver({
     "a1": 10**6,#acceleration number
@@ -114,7 +114,7 @@ rosenbroke_pso_2 = PSOSolver({
     "speed_max": np.array([10**7,10**7]),#vector of max speed
 }, rosenbroke, True)
 
-rosenbroke_pso_2.anisolve(save=True)
+rosenbroke_pso_2.anisolve(save=False)
 
 rosenbroke_pso_3 = PSOSolver({
     "a1": 10**6,#acceleration number
@@ -127,7 +127,7 @@ rosenbroke_pso_3 = PSOSolver({
     "speed_max": np.array([10**7,10**7]),#vector of max speed
 }, rosenbroke, True)
 
-rosenbroke_pso_3.anisolve(save=True)
+rosenbroke_pso_3.anisolve(save=False)
 
 
 r_1 = test_mean(rosenbroke_pso_1, ITERATIONS, TESTS, "rosenbroke_1")
@@ -152,7 +152,7 @@ cross_in_tray_pso_1 = PSOSolver({
     "speed_max": np.array([1,1]),#vector of max speed
 }, cross_in_tray, True)
 
-cross_in_tray_pso_1.anisolve(save=True)
+cross_in_tray_pso_1.anisolve(save=False)
 
 cross_in_tray_pso_2 = PSOSolver({
     "a1": 0.1,#acceleration number
@@ -165,13 +165,14 @@ cross_in_tray_pso_2 = PSOSolver({
     "speed_max": np.array([1,1]),#vector of max speed
 }, cross_in_tray, True)
 
-cross_in_tray_pso_2.anisolve(save=True)
+cross_in_tray_pso_2.anisolve(save=False)
 
 c_1 = test_mean(cross_in_tray_pso_1, int(ITERATIONS/10), TESTS, "cross_in_tray_1")
 c_2 = test_mean(cross_in_tray_pso_2, int(ITERATIONS/10), TESTS, "cross_in_tray_2")
 plt.plot(range(len(c_1)), c_1, label = "cross_in_tray 1")
 plt.plot(range(len(c_2)), c_2, label = "cross_in_tray 2")
 plt.legend()
+plt.yscale("log")
 plt.show()
 
 
@@ -186,7 +187,7 @@ holder_table_pso_1 = PSOSolver({
     "speed_max": np.array([1,1]),#vector of max speed
 }, holder_table, True)
 
-holder_table_pso_1.anisolve(save=True)
+holder_table_pso_1.anisolve(save=False)
 
 holder_table_pso_2 = PSOSolver({
     "a1": 0.1,#acceleration number
@@ -199,13 +200,14 @@ holder_table_pso_2 = PSOSolver({
     "speed_max": np.array([1,1]),#vector of max speed
 }, holder_table, True)
 
-holder_table_pso_2.anisolve(save=True)
+holder_table_pso_2.anisolve(save=False)
 
 h_1 = test_mean(holder_table_pso_1, ITERATIONS, TESTS, "holder_table_1")
 h_2 = test_mean(holder_table_pso_2, ITERATIONS, TESTS, "holder_table_2")
 plt.plot(range(len(h_1)), h_1, label = "holder_table 1")
 plt.plot(range(len(h_2)), h_2, label = "holder_table 2")
 plt.legend()
+plt.yscale("log")
 plt.show()
 
 
@@ -220,7 +222,7 @@ mccormick_pso_1 = PSOSolver({
     "speed_max": np.array([1,1]),#vector of max speed
 }, mccormick, True)
 
-mccormick_pso_1.anisolve(save=True)
+mccormick_pso_1.anisolve(save=False)
 
 mccormick_pso_2 = PSOSolver({
     "a1": 1,#acceleration number
@@ -233,11 +235,46 @@ mccormick_pso_2 = PSOSolver({
     "speed_max": np.array([1,1]),#vector of max speed
 }, mccormick, True)
 
-mccormick_pso_2.anisolve(save=True)
+mccormick_pso_2.anisolve(save=False)
 
 m_1 = test_mean(mccormick_pso_1, ITERATIONS, TESTS, "mccormick_1")
 m_2 = test_mean(mccormick_pso_2, ITERATIONS, TESTS, "mccormick_2")
 plt.plot(range(len(m_1)), m_1, label = "mccormick 1")
 plt.plot(range(len(m_2)), m_2, label = "mccormick 2")
 plt.legend()
+plt.yscale("log")
+plt.show()
+
+styrblinski_tang_pso_1 = PSOSolver({
+    "a1": 0.1,#acceleration number
+    "a2": 0.2,#acceleration number
+    "pop_size": 50,#population size
+    "dim": 2,#dimensions
+    "pos_min": np.array([-5,-5]),#vector of minimum positions
+    "pos_max": np.array([5,5]),#vector of maximum positions
+    "speed_min": np.array([-1,-1]),#vector of min speed
+    "speed_max": np.array([1,1]),#vector of max speed
+}, styrblinski_tang, True)
+
+styrblinski_tang_pso_1.anisolve(save=False)
+
+styrblinski_tang_pso_2 = PSOSolver({
+    "a1": 0.2,#acceleration number
+    "a2": 0,#acceleration number
+    "pop_size": 50,#population size
+    "dim": 2,#dimensions
+    "pos_min": np.array([-5,-5]),#vector of minimum positions
+    "pos_max": np.array([5,5]),#vector of maximum positions
+    "speed_min": np.array([-1,-1]),#vector of min speed
+    "speed_max": np.array([1,1]),#vector of max speed
+}, styrblinski_tang, True)
+
+styrblinski_tang_pso_2.anisolve(save=False)
+
+s_1 = test_mean(styrblinski_tang_pso_1, ITERATIONS, TESTS, "styrblinski_tang_pso_1")
+s_2 = test_mean(styrblinski_tang_pso_2, ITERATIONS, TESTS, "styrblinski_tang_pso_2")
+plt.plot(range(len(s_1)), s_1, label = "styrblinski_tang 1")
+plt.plot(range(len(s_2)), s_2, label = "styrblinski_tang 2")
+plt.legend()
+plt.yscale("log")
 plt.show()
