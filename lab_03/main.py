@@ -27,13 +27,25 @@ from PSO import PSOSolver
 
 print("Num GPUs Available: ", len(tensorflow.config.list_physical_devices('GPU')))
 
-
+label_names = [
+    'apple', 'aquarium_fish', 'baby', 'bear', 'beaver', 'bed', 'bee', 'beetle', 'bicycle', 'bottle',
+    'bowl', 'boy', 'bridge', 'bus', 'butterfly', 'camel', 'can', 'castle', 'caterpillar', 'cattle',
+    'chair', 'chimpanzee', 'clock', 'cloud', 'cockroach', 'couch', 'crab', 'crocodile', 'cup', 'dinosaur',
+    'dolphin', 'elephant', 'flatfish', 'forest', 'fox', 'girl', 'hamster', 'house', 'kangaroo', 'keyboard',
+    'lamp', 'lawn_mower', 'leopard', 'lion', 'lizard', 'lobster', 'man', 'maple_tree', 'motorcycle', 'mountain',
+    'mouse', 'mushroom', 'oak_tree', 'orange', 'orchid', 'otter', 'palm_tree', 'pear', 'pickup_truck', 'pine_tree',
+    'plain', 'plate', 'poppy', 'porcupine', 'possum', 'rabbit', 'raccoon', 'ray', 'road', 'rocket',
+    'rose', 'sea', 'seal', 'shark', 'shrew', 'skunk', 'skyscraper', 'snail', 'snake', 'spider',
+    'squirrel', 'streetcar', 'sunflower', 'sweet_pepper', 'table', 'tank', 'telephone', 'television', 'tiger', 'tractor',
+    'train', 'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman', 'worm'
+]
 (x_train, y_train), (x_test, y_test) = cifar100.load_data()
 plt.figure(figsize=(12, 12))
 for i in range(100):
     ax = plt.subplot(10, 10, i + 1)
     plt.imshow(np.array(x_train[i]))
-    plt.title(str(y_train[i]))
+    class_index = int(y_train[i])
+    plt.title(label_names[class_index], fontsize=8)
     plt.axis("off")
 plt.show()
 # The 10 different classes represent airplanes, cars, birds, cats, deer, dogs, frogs, horses, ships, and trucks.
@@ -44,12 +56,12 @@ print(x_test.shape)
 x_train = x_train.astype('float32')
 x_test = x_test.astype('float32')
 
-print(x_train[0])
+
 
 x_train = x_train / 255
 x_test = x_test / 255
 
-print(x_train[0])
+
 
 x_train.min(), x_train.max()
 
@@ -57,10 +69,7 @@ print(y_train)
 
 y_train_cat = to_categorical(y_train)
 
-print(y_train_cat[0])
-
 y_test_cat = to_categorical(y_test)
-print(y_test_cat)
 
 x_valid = x_train[40000:]
 y_valid_cat = y_train_cat[40000:]
@@ -125,11 +134,13 @@ exit()
 
 model = Sequential()
 model.add(Input(shape=(32, 32, 3)))
-model.add(Conv2D(25, (1, 1), activation='relu',padding='same'))
+model.add(Conv2D(32, (5, 5), activation='relu',padding='same'))
 model.add(BatchNormalization())
 model.add(Flatten())
-model.add(Dense(360, activation='relu'))
-model.add(Dropout(0.2))
+model.add(Dense(800, activation='tanh'))
+model.add(Dropout(0.45))
+model.add(Dense(400, activation='relu'))
+model.add(Dropout(0.45))
 model.add(Dense(100, activation='softmax'))
 
 
@@ -140,7 +151,7 @@ model.compile(optimizer=Adam(learning_rate=0.001),
               loss=CategoricalCrossentropy(),
               metrics=['accuracy', TopKCategoricalAccuracy(k=2, name="Top2")])
 
-history = model.fit(x_train, y_train_cat, batch_size=200, epochs = 20, validation_data=(x_valid, y_valid_cat))
+history = model.fit(x_train, y_train_cat, batch_size = 100, epochs = 250, validation_data=(x_valid, y_valid_cat))
 
 model.save("cifar100.keras")
 
@@ -161,6 +172,8 @@ model.evaluate(x_test, y_test_cat)
 
 predictions = model.predict(x_test)
 
+
+
 #Predict
 y_prediction_cat = model.predict(x_test)
 y_prediction = np.argmax(y_prediction_cat, axis=1)
@@ -179,6 +192,23 @@ print(np.argmax(y_test[0]))
 print(x_test.shape)
 
 plt.imshow(x_test[0])
-plt.title('Class: ' + str(y_test[0]))
+plt.title('Class: ' + str(label_names[y_test[0][0]]))
 plt.show()
-#"""
+
+
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
+# 1. Створення Confusion Matrix
+cm = confusion_matrix(y_test, y_prediction)
+
+# 2. Відображення без чисел
+fig, ax = plt.subplots(figsize=(10, 10))
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_names)
+disp.plot(include_values=False,  # <- не показувати числа
+          xticks_rotation=90,
+          cmap='Blues',
+          ax=ax)
+plt.title("Confusion Matrix")
+plt.grid(False)
+plt.tight_layout()
+plt.show()
