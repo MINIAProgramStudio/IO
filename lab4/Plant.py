@@ -1,0 +1,52 @@
+from random import random
+
+class Plant:
+    def __init__(self, mass, normal_daily_water_consumption_per_kg, water_capacity_per_kg):
+        self.mass = [mass]
+        self.normal_daily_water_consumption = normal_daily_water_consumption_per_kg
+        self.water_density = water_capacity_per_kg
+        self.stored_water = [(random()*0.5+0.5)*self.water_capacity()]
+        self.health = [random()*0.2 + 0.8]
+
+    def daily_update(self, season, soil_moisture, temperature, air_moisture):
+
+        if self.health[-1] <= 0:
+            self.health.append(0)
+            self.stored_water.append(0)
+            self.mass.append(0)
+            return 0, 0
+        else:
+            self.health.append(self.health[-1])
+
+        k = (season%3)/2
+        water_deficit = self.normal_daily_water_consumption*self.mass[-1]*k
+        if air_moisture < 0.6:
+            water_deficit *= 0.6/(0.6-air_moisture)
+        water_deficit *= abs(1-(temperature/13)*k)
+
+        water_desired_proficit = min(self.water_capacity()-self.stored_water[-1], self.normal_daily_water_consumption*self.mass[-1] + water_deficit/10)
+        #print(soil_moisture)
+        water_avaliable_from_soil = max(1, soil_moisture/0.6)*self.mass[-1]
+        #print(water_avaliable_from_soil)
+        #print(water_desired_proficit)
+        water_proficit = min(water_avaliable_from_soil, water_desired_proficit)
+
+        self.stored_water.append(self.stored_water[-1] + water_proficit)
+        self.stored_water[-1] = max(self.stored_water[-1], self.water_capacity())
+        self.stored_water[-1] -= water_deficit
+        self.stored_water[-1] = max(0, self.stored_water[-1])
+
+        self.health[-1] += 0.025
+        if self.stored_water[-1] < self.water_capacity()*0.1:
+            self.health[-1] -= 0.05
+        if soil_moisture > 0.9:
+            self.health[-1] -= 0.05
+
+
+
+        self.health[-1] = min(1, max(0, self.health[-1]))
+        return self.stored_water[-1]-self.stored_water[-2]+water_deficit, water_deficit #soil water deficit and moisturised water
+
+
+    def water_capacity(self):
+        return self.water_density*self.mass[-1]
