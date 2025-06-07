@@ -13,12 +13,12 @@ class Plant:
         if self.health[-1] <= 0:
             self.health.append(0)
             self.stored_water.append(0)
-            self.mass.append(0)
+            self.mass.append(self.mass[-1])
             return 0, 0
         else:
             self.health.append(self.health[-1])
 
-        k = (season%3)/2
+        k = 2-abs(season-2)
         water_deficit = self.normal_daily_water_consumption*self.mass[-1]*k
         if air_moisture < 0.6:
             water_deficit *= 0.6/(0.6-air_moisture)
