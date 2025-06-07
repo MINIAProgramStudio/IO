@@ -15,9 +15,9 @@ w = Weather(
 for i in range(365):
     w.daily_update(0)
 
-plt.plot(w.temperature, label="temp C")
-plt.plot(np.array(w.moisture)*100, label = "humidity %")
-plt.plot(w.rainfall, label = "rainfall mm")
+plt.plot(w.temperature, label="температура C")
+plt.plot(np.array(w.moisture)*100, label = "вологість %")
+plt.plot(w.rainfall, label = "опади мм")
 plt.legend()
 plt.show()
 
