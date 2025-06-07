@@ -14,7 +14,7 @@ class Garden:
         delta = np.zeros((self.soil_wetness.shape[0],2))
         for i in range(len(self.plants)):
             delta[i][0], delta[i][1] = self.plants[i].daily_update(season, self.soil_wetness[i], temperature, air_moisture)
-            self.soil_wetness[i] -= delta[i, 1]/self.soil_area[i]
+            self.soil_wetness[i] -= delta[i, 0]/(self.soil_area[i]*600) # 1m^3 грунту може утримувати 150-600 літрів води, вважатимемо що глибина грунту -- 2 метри
         soil_wetness_evaporation_delta = max(temperature*0.005, 0.001)*(1+self.soil_wetness_history[-1])**3
         self.soil_wetness -= soil_wetness_evaporation_delta * (1.05-np.random.rand(self.soil_area.shape[0])*0.1)
         self.soil_wetness = np.clip(self.soil_wetness, 0, 1)
