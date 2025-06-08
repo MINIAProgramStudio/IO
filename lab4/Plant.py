@@ -7,6 +7,7 @@ class Plant:
         self.water_density = water_capacity_per_kg
         self.stored_water = [(random()*0.5+0.5)*self.water_capacity()]
         self.health = [random()*0.2 + 0.8]
+        self.days_since_overwatering = float("inf")
 
     def daily_update(self, season, soil_moisture, temperature, air_moisture):
 
@@ -17,6 +18,7 @@ class Plant:
             return 0, 0
         else:
             self.health.append(self.health[-1])
+            self.days_since_overwatering += 1
 
         k = 2-abs(season-2)
         water_deficit = self.normal_daily_water_consumption*self.mass[-1]*k
@@ -41,6 +43,7 @@ class Plant:
             self.health[-1] -= 0.05
         if soil_moisture > 0.9:
             self.health[-1] -= 0.05
+            self.days_since_overwatering = 0
 
 
 

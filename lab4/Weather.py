@@ -2,7 +2,7 @@ import numpy as np
 from random import random
 
 class Weather:
-    def __init__(self, start_day, average_temperatures, average_moistures, average_rainfall):
+    def __init__(self, start_day, average_temperatures, average_moistures, average_rainfall, rainfall_sparcity = 3):
         self.days = [start_day]
         self.average_temperatures = average_temperatures
         self.average_moistures = average_moistures
@@ -10,12 +10,13 @@ class Weather:
         self.temperature = [self.average_temperatures[self.get_season()]*(0.9 + random()*0.2)]
         self.moisture = [self.average_moistures[self.get_season()]*(0.9 + random()*0.2)]
         self.rainfall = [0]
+        self.rainfall_sparcity = rainfall_sparcity
 
     def daily_update(self, delta_water):
         self.days.append((self.days[-1]+1)%365)
 
-        if random() < 0.33:
-            self.rainfall.append(self.average_rainfall[self.get_season()] * (2.5 + random()))
+        if random() < 1/self.rainfall_sparcity:
+            self.rainfall.append(self.average_rainfall[self.get_season()] * (self.rainfall_sparcity-0.5 + random()))
         else:
             self.rainfall.append(0)
         self.moisture.append(self.moisture[-1] + delta_water/10**5)

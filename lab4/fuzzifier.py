@@ -20,21 +20,21 @@ def soil_wetness(x):
     very_dry = trapmf(x, -0.1, 0, 0.1, 0.2)
     wet = trapmf(x, 0.6, 0.7, 0.8, 0.9)
     very_wet = trapmf(x, 0.8, 0.9, 1, 1.1)
-    return very_dry, dry, normal, wet, very_wet
+    return [very_dry, dry, normal, wet, very_wet]
 
 def tank_fullness(x):
     tank_empty = trapmf(x, -0.1, 0, 0, 0.2)
     tank_normal = trapmf(x, 0, 0.2, 0.8, 1)
     tank_overflowing = trapmf(x, 0.9, 1, 1, 1.1)
-    return tank_empty, tank_normal, tank_overflowing
+    return [tank_empty, tank_normal, tank_overflowing]
 
 def days_since_rainfall(x):
     rainfall_was_recent = gaussmf(x, 3, 0)
-    return rainfall_was_recent
+    return [rainfall_was_recent]
 
 def days_since_too_much_water(x):
     do_not_water = gaussmf(x, 1.5, 0)
-    return do_not_water
+    return [do_not_water]
 """
 space = np.linspace(0, 1, 101)
 very_dry, dry, normal, wet, very_wet = soil_wetness(space)

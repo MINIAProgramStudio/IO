@@ -7,8 +7,13 @@ class Garden:
         self.soil_area = soil_area
         self.soil_wetness = np.random.rand(self.soil_area.shape[0])*0.2 + 0.4
         self.soil_wetness_history = [np.mean(self.soil_wetness)]
+        self.days_since_rain = 1
 
     def daily_update(self, season, temperature, air_moisture, rain_mm):
+        if rain_mm > 0 :
+            self.days_since_rain = 0
+        else:
+            self.days_since_rain += 1
         self.soil_wetness += rain_mm*0.001
         #print(self.soil_wetness)
         delta = np.zeros((self.soil_wetness.shape[0],2))
