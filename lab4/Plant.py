@@ -10,7 +10,7 @@ class Plant:
         self.days_since_overwatering = float("inf")
 
     def daily_update(self, season, soil_moisture, temperature, air_moisture):
-
+        #print(soil_moisture)
         if self.health[-1] <= 0:
             self.health.append(0)
             self.stored_water.append(0)
@@ -22,22 +22,21 @@ class Plant:
 
         k = 2-abs(season-2)
         water_deficit = self.normal_daily_water_consumption*self.mass[-1]*k
-        if air_moisture < 0.6:
-            water_deficit *= 0.6/(0.6-air_moisture)
+        #print(water_deficit)
+        if air_moisture < 0.3:
+            water_deficit *= 0.3/(0.3-air_moisture)
         water_deficit *= abs(1-(temperature/13)*k)
-
-        water_desired_proficit = min(self.water_capacity()-self.stored_water[-1], self.normal_daily_water_consumption*self.mass[-1] + water_deficit/10)
+        #print(water_deficit)
+        water_desired_proficit = self.water_capacity()-self.stored_water[-1] + self.normal_daily_water_consumption*self.mass[-1] + water_deficit
         #print(soil_moisture)
-        water_avaliable_from_soil = max(1, soil_moisture/0.6)*self.mass[-1]
+        water_avaliable_from_soil = soil_moisture*100*self.mass[-1]
         #print(water_avaliable_from_soil)
         #print(water_desired_proficit)
         water_proficit = min(water_avaliable_from_soil, water_desired_proficit)
 
-        self.stored_water.append(self.stored_water[-1] + water_proficit)
-        self.stored_water[-1] = max(self.stored_water[-1], self.water_capacity())
-        self.stored_water[-1] -= water_deficit
+        self.stored_water.append(self.stored_water[-1] + water_proficit - water_deficit)
+        self.stored_water[-1] = min(self.stored_water[-1], self.water_capacity())
         self.stored_water[-1] = max(0, self.stored_water[-1])
-
         self.health[-1] += 0.025
         if self.stored_water[-1] < self.water_capacity()*0.1:
             self.health[-1] -= 0.05

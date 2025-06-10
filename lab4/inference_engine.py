@@ -17,6 +17,10 @@ def general_do_not_water_rule_direct(days_since_overwatering):
     do_not_water_set = fuzzifier.days_since_too_much_water(days_since_overwatering)[0]
     return np.array([do_not_water_set])
 
+def watering_importance(plant_index, garden):
+    value = general_watering_rule(plant_index, garden) - general_do_not_water_rule(plant_index, garden)
+    return np.array([np.clip(value, 0, 1)])
+
 # twarc -- tap water and rain collector
 
 def twarc_rule(tank_level):
@@ -33,11 +37,11 @@ def desert_water_usage_rule_direct(tank_level, days_since_rain):
     tank_level_set = np.asarray(fuzzifier.tank_fullness(tank_level))
     rainfall_recency = fuzzifier.days_since_rainfall(days_since_rain)[0]
     rainfall_deficit = 1 - rainfall_recency
-    conservative_usage = tank_level_set[0] * (1 - rainfall_recency)
+    conservative_usage = tank_level_set[0] * rainfall_deficit
     normal_usage = np.clip(tank_level_set[1] + tank_level_set[0] * rainfall_deficit, 0, 1)
     generous_usage = tank_level_set[2]
     return np.array([conservative_usage, normal_usage, generous_usage])
-
+"""
 space = np.linspace(0, 1, 101)
 plt.plot(space, general_watering_rule_direct(space)[0], label = "Необхідність поливу рослини")
 plt.title("Необхідність поливу рослини")
@@ -92,4 +96,4 @@ plt.title("Злив води в сухі рослини")
 plt.xlabel("Наповнення ємності")
 plt.ylabel("Знач. функ. приналежності")
 plt.legend()
-plt.show()
+plt.show()"""

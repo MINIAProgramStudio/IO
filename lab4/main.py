@@ -1,16 +1,20 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
+import random
 
 from Garden import Garden
 from Plant import Plant
+from Waterer import Waterer
 from Weather import Weather
 
+# Лише погода
+random.seed(0)
 w = Weather(
     0,
     np.array([-5, 15, 27, 15]),
     np.array([0.40, 0.60, 0.50, 0.45]),
-    np.array([5, 20, 15, 10]),
+    np.array([5, 40, 30, 20]),
 )
 
 for i in tqdm(range(365), desc = "тест погоди"):
@@ -22,8 +26,16 @@ plt.plot(w.rainfall, label = "опади мм")
 plt.legend()
 plt.show()
 
+# Погода і рослини
+random.seed(0)
+w = Weather(
+    0,
+    np.array([-5, 15, 27, 15]),
+    np.array([0.40, 0.60, 0.50, 0.45]),
+    np.array([5, 40, 30, 20]),
+)
 g = Garden(
-    [Plant(1, 0.05, 0.5), Plant(2, 0.05, 0.5), Plant(10, 0.05, 0.5)],
+    [Plant(1, 1.5, 0.85), Plant(2, 1.5, 0.85), Plant(10, 1.5, 0.85)],
     np.array([2, 4, 10]),
     np.array([[0.9, 0.05, 0.05],
               [0.05, 0.9, 0.05],
@@ -34,30 +46,76 @@ for j in tqdm(range(365), desc = "тест саду без поливу"):
     w.daily_update(water_delta)
     g.daily_update(w.get_season(), w.temperature[-1], w.moisture[-1], w.rainfall[-1])
 
-plt.plot(w.temperature[366:], label="temp C")
-plt.plot(np.array(w.moisture[366:])*100, label = "humidity %")
+fig, axs = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
+fig.suptitle("Сад без поливу", fontsize = 20)
+axs[0].plot(w.temperature, label="Температура (°C)")
+axs[0].plot(np.array(w.moisture) * 100, label="Вологість (%)")
+axs[0].legend()
+axs[0].set_title("Температура і вологість")
 
+axs[1].plot(w.rainfall, label="Опади (mm)")
+axs[1].plot(np.array(g.soil_wetness_history) * 100, label="Вологість ґрунту (%)")
+axs[1].legend()
+axs[1].set_title("Опади і вологість ґрунту")
 
-plt.legend()
+average_health = np.mean([plant.health for plant in g.plants], axis=0)
+average_water = np.mean([np.array(plant.stored_water) / plant.water_capacity() for plant in g.plants], axis=0)
+
+axs[2].plot(average_health * 100, label="Здоров'я саду")
+axs[2].plot(average_water * 100, label="Запас води в рослинах")
+axs[2].legend()
+axs[2].set_title("Середні здоров'я і запас води рослин")
+
+plt.tight_layout()
 plt.show()
+del w
+del g
+# Погода, рослини і програмака-поливака
+random.seed(0)
+w = Weather(
+    0,
+    np.array([-5, 15, 27, 15]),
+    np.array([0.40, 0.60, 0.50, 0.45]),
+    np.array([5, 40, 30, 20]),
+)
+g = Garden(
+    [Plant(1, 1.5, 0.85), Plant(2, 1.5, 0.85), Plant(10, 1.5, 0.85)],
+    np.array([2, 4, 10]),
+    np.array([[0.9, 0.05, 0.05],
+              [0.05, 0.9, 0.05],
+              [0.05, 0.05, 0.09]])
+)
+waterer = Waterer(True, 0, 0, {
+    "tap_watering_threshold": 0.5,
+    "add_water": 0.5,
+})
 
-plt.plot(w.rainfall[366:], label = "rainfall mm")
-plt.plot(np.array(g.soil_wetness_history)*100, label = "soil wetness")
+water_delta = 0
+for j in tqdm(range(365), desc = "тест саду з поливом з водогону"):
+    w.daily_update(water_delta)
+    waterer.daily_update(w.rainfall[-1], g)
+    g.daily_update(w.get_season(), w.temperature[-1], w.moisture[-1], w.rainfall[-1])
 
-plt.legend()
-plt.show()
 
-average_health = []
-for plant in g.plants:
-    average_health.append(plant.health)
-average_health = np.mean(np.array(average_health), axis = 0)
+fig, axs = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
+fig.suptitle("Сад з поливом", fontsize = 20)
+axs[0].plot(w.temperature, label="Температура (°C)")
+axs[0].plot(np.array(w.moisture) * 100, label="Вологість (%)")
+axs[0].legend()
+axs[0].set_title("Температура і вологість")
 
-average_water = []
-for plant in g.plants:
-    average_water.append(np.array(plant.stored_water)/plant.water_capacity())
-average_water = np.mean(np.array(average_water), axis = 0)
+axs[1].plot(w.rainfall, label="Опади (mm)")
+axs[1].plot(np.array(g.soil_wetness_history) * 100, label="Вологість ґрунту (%)")
+axs[1].legend()
+axs[1].set_title("Опади і вологість ґрунту")
 
-plt.plot(average_health*100, label = "Здоров'я саду")
-plt.plot(average_water*100, label = "Запас води в рослинах")
-plt.legend()
+average_health = np.mean([plant.health for plant in g.plants], axis=0)
+average_water = np.mean([np.array(plant.stored_water) / plant.water_capacity() for plant in g.plants], axis=0)
+
+axs[2].plot(average_health * 100, label="Здоров'я саду")
+axs[2].plot(average_water * 100, label="Запас води в рослинах")
+axs[2].legend()
+axs[2].set_title("Середні здоров'я і запас води рослин")
+
+plt.tight_layout()
 plt.show()

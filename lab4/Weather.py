@@ -2,7 +2,7 @@ import numpy as np
 from random import random
 
 class Weather:
-    def __init__(self, start_day, average_temperatures, average_moistures, average_rainfall, rainfall_sparcity = 3):
+    def __init__(self, start_day, average_temperatures, average_moistures, average_rainfall, rainfall_sparcity = 10):
         self.days = [start_day]
         self.average_temperatures = average_temperatures
         self.average_moistures = average_moistures
