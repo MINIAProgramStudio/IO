@@ -1,5 +1,8 @@
 from random import random
 
+from Garden import SOIL_CAPACITY
+
+
 class Plant:
     def __init__(self, mass, normal_daily_water_consumption_per_kg, water_capacity_per_kg):
         self.mass = [mass]
@@ -25,11 +28,11 @@ class Plant:
         #print(water_deficit)
         if air_moisture < 0.3:
             water_deficit *= 0.3/(0.3-air_moisture)
-        water_deficit *= abs(1-(temperature/13)*k)
+        water_deficit *= max((temperature/17), 0.1)
         #print(water_deficit)
         water_desired_proficit = self.water_capacity()-self.stored_water[-1] + self.normal_daily_water_consumption*self.mass[-1] + water_deficit
         #print(soil_moisture)
-        water_avaliable_from_soil = soil_moisture*100*self.mass[-1]
+        water_avaliable_from_soil = soil_moisture*SOIL_CAPACITY/2
         #print(water_avaliable_from_soil)
         #print(water_desired_proficit)
         water_proficit = min(water_avaliable_from_soil, water_desired_proficit)
@@ -47,7 +50,6 @@ class Plant:
 
 
         self.health[-1] = min(1, max(0, self.health[-1]))
-        print(water_deficit)
         return self.stored_water[-1]-self.stored_water[-2]+water_deficit, water_deficit #soil water deficit and moisturised water
 
 

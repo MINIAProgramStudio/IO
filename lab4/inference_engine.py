@@ -26,7 +26,7 @@ def plant_criticality_list(garden):
     def watering_importance_key(plant_index):
         return watering_importance_list[plant_index]
     indexes = list(range(len(garden.plants)))
-    sorted(indexes, key = watering_importance_key)
+    sorted(indexes, key = watering_importance_key, reverse = True)
     return indexes
 
 # twarc -- tap water and rain collector
