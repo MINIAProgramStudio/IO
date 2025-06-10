@@ -97,7 +97,7 @@ for j in tqdm(range(365), desc = "тест саду з поливом з вод�
     g.daily_update(w.get_season(), w.temperature[-1], w.moisture[-1], w.rainfall[-1])
 
 
-fig, axs = plt.subplots(3, 1, figsize=(12, 10), sharex=True)
+fig, axs = plt.subplots(4, 1, figsize=(12, 10), sharex=True)
 fig.suptitle("Сад з поливом", fontsize = 20)
 axs[0].plot(w.temperature, label="Температура (°C)")
 axs[0].plot(np.array(w.moisture) * 100, label="Вологість (%)")
@@ -116,6 +116,10 @@ axs[2].plot(average_health * 100, label="Здоров'я саду")
 axs[2].plot(average_water * 100, label="Запас води в рослинах")
 axs[2].legend()
 axs[2].set_title("Середні здоров'я і запас води рослин")
+
+axs[3].plot(waterer.tap_usage_history, label = "Використання водогону, л")
+axs[3].legend()
+axs[3].set_title("Використання води")
 
 plt.tight_layout()
 plt.show()

@@ -21,6 +21,14 @@ def watering_importance(plant_index, garden):
     value = general_watering_rule(plant_index, garden) - general_do_not_water_rule(plant_index, garden)
     return np.array([np.clip(value, 0, 1)])
 
+def plant_criticality_list(garden):
+    watering_importance_list = [watering_importance(plant_index, garden) for plant_index in range(len(garden.plants))]
+    def watering_importance_key(plant_index):
+        return watering_importance_list[plant_index]
+    indexes = list(range(len(garden.plants)))
+    sorted(indexes, key = watering_importance_key)
+    return indexes
+
 # twarc -- tap water and rain collector
 
 def twarc_rule(tank_level):

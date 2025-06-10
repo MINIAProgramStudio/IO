@@ -47,6 +47,7 @@ class Plant:
 
 
         self.health[-1] = min(1, max(0, self.health[-1]))
+        print(water_deficit)
         return self.stored_water[-1]-self.stored_water[-2]+water_deficit, water_deficit #soil water deficit and moisturised water
 
 
