@@ -28,22 +28,22 @@ from PSO import PSOSolver
 print("Num GPUs Available: ", len(tensorflow.config.list_physical_devices('GPU')))
 
 label_names = [
-    'apple', 'aquarium_fish', 'baby', 'bear', 'beaver', 'bed', 'bee', 'beetle', 'bicycle', 'bottle',
-    'bowl', 'boy', 'bridge', 'bus', 'butterfly', 'camel', 'can', 'castle', 'caterpillar', 'cattle',
-    'chair', 'chimpanzee', 'clock', 'cloud', 'cockroach', 'couch', 'crab', 'crocodile', 'cup', 'dinosaur',
-    'dolphin', 'elephant', 'flatfish', 'forest', 'fox', 'girl', 'hamster', 'house', 'kangaroo', 'keyboard',
-    'lamp', 'lawn_mower', 'leopard', 'lion', 'lizard', 'lobster', 'man', 'maple_tree', 'motorcycle', 'mountain',
-    'mouse', 'mushroom', 'oak_tree', 'orange', 'orchid', 'otter', 'palm_tree', 'pear', 'pickup_truck', 'pine_tree',
-    'plain', 'plate', 'poppy', 'porcupine', 'possum', 'rabbit', 'raccoon', 'ray', 'road', 'rocket',
-    'rose', 'sea', 'seal', 'shark', 'shrew', 'skunk', 'skyscraper', 'snail', 'snake', 'spider',
-    'squirrel', 'streetcar', 'sunflower', 'sweet_pepper', 'table', 'tank', 'telephone', 'television', 'tiger', 'tractor',
-    'train', 'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman', 'worm'
+    "airplane",   # 0
+    "automobile", # 1
+    "bird",       # 2
+    "cat",        # 3
+    "deer",       # 4
+    "dog",        # 5
+    "frog",       # 6
+    "horse",      # 7
+    "ship",       # 8
+    "truck"       # 9
 ]
 
-(x_train, y_train), (x_test, y_test) = cifar100.load_data()
+(x_train, y_train), (x_test, y_test) = cifar10.load_data()
 plt.figure(figsize=(12, 12))
-for i in range(100):
-    ax = plt.subplot(10, 10, i + 1)
+for i in range(10):
+    ax = plt.subplot(5, 2, i + 1)
     plt.imshow(np.array(x_train[i]))
     class_index = int(y_train[i])
     plt.title(label_names[class_index], fontsize=8)
@@ -150,7 +150,7 @@ model.add(Dropout(0.2))
 model.add(Flatten())
 model.add(Dense(200, activation='relu'))
 model.add(Dropout(0.2))
-model.add(Dense(100, activation='softmax'))
+model.add(Dense(10, activation='softmax'))
 
 #model = tensorflow.keras.models.load_model('cifar100.keras')
 
@@ -161,7 +161,7 @@ model.compile(optimizer=Adam(learning_rate=0.001),
               loss=CategoricalCrossentropy(),
               metrics=['accuracy', TopKCategoricalAccuracy(k=2, name="Top2")])
 
-history = model.fit(x_train, y_train_cat, batch_size = 100, epochs = 30, validation_data=(x_valid, y_valid_cat))
+history = model.fit(x_train, y_train_cat, batch_size = 100, epochs = 10, validation_data=(x_valid, y_valid_cat))
 
 model.save("cifar100.keras")
 
