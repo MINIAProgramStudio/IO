@@ -1,6 +1,6 @@
 import numpy as np
 
-SOIL_CAPACITY = 1500 # 1m^3 грунту може утримувати 150-600 літрів води, вважатимемо що глибина грунту -- 5 метрів і ємність 300 л/м^3
+SOIL_CAPACITY = 2*300 # 1m^3 грунту може утримувати 150-600 літрів води, вважатимемо що ємність 300 л/м^3
 
 class Garden:
     def __init__(self, plants, soil_area, soil_distance_matrix):

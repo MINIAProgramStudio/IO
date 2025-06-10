@@ -29,21 +29,24 @@ class Waterer:
             if self.water_capacity > 0:
                 self.water[-1] = min(self.water_capacity, self.water[-1] + self.rain_collector_area * rainfall)
                 # generous usage
-                while np.argmax(inference_engine.twarc_rule(self.water/self.water_capacity)) == 2:
+                while np.argmax(inference_engine.twarc_rule(self.water[-1]/self.water_capacity)) == 2:
                     plants_idndexes = inference_engine.plant_criticality_list(garden)
                     worst_plant_index = plants_idndexes[0]
-                    garden.soil_wetness[worst_plant_index] += min(self.weights["add_water"], self.water/(garden.soil_area[worst_plant_index]*SOIL_CAPACITY))
-                    self.water -= min(self.weights["add_water"]*SOIL_CAPACITY*garden.soil_area[worst_plant_index], self.water)
+                    garden.soil_wetness[worst_plant_index] += min(self.weights["add_water"], self.water[-1]/(garden.soil_area[worst_plant_index]*SOIL_CAPACITY))
+                    self.water[-1] -= min(self.weights["add_water"]*SOIL_CAPACITY*garden.soil_area[worst_plant_index], self.water[-1])
+                    self.rain_water_usage_history[-1] += min(self.weights["add_water"]*SOIL_CAPACITY*garden.soil_area[worst_plant_index], self.water[-1])
 
                 # normal and conservative usage
                 for plant_index in range(len(garden.plants)):
                     if inference_engine.watering_importance(plant_index, garden) > self.weights["tap_watering_threshold"]:
                         garden.soil_wetness[plant_index] += self.weights["add_water"]
                         garden.soil_wetness[plant_index] = min(garden.soil_wetness[plant_index], 1)
-                        self.tap_usage_history += self.weights["add_water"]*(garden.soil_area[plant_index]*SOIL_CAPACITY) - min(self.weights["add_water"]*(garden.soil_area[plant_index]*SOIL_CAPACITY), self.water)
-                        if np.argmax(inference_engine.twarc_rule(self.water/self.water_capacity)) == 1:
-                            self.water[-1] -= min(self.weights["add_water"], self.water/(garden.soil_area[plant_index]*SOIL_CAPACITY))
-                            self.rain_water_usage_history += min(self.weights["add_water"], self.water/(garden.soil_area[plant_index]*SOIL_CAPACITY))
+                        self.tap_usage_history[-1] += self.weights["add_water"]*(garden.soil_area[plant_index]*SOIL_CAPACITY) - min(self.weights["add_water"]*(garden.soil_area[plant_index]*SOIL_CAPACITY), self.water[-1])
+                        if np.argmax(inference_engine.twarc_rule(self.water[-1]/self.water_capacity)) == 1:
+                            self.rain_water_usage_history[-1] += min(self.weights["add_water"]*(garden.soil_area[plant_index] * SOIL_CAPACITY), self.water[-1])
+                            self.water[-1] -= min(self.weights["add_water"], self.water[-1]/(garden.soil_area[plant_index]*SOIL_CAPACITY))
+
+
 
             else:
                 for plant_index in range(len(garden.plants)):
