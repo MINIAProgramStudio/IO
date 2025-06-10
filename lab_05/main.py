@@ -90,25 +90,25 @@ def model_fitness(pos):
     print("training", pos)
     model = Sequential()
     model.add(Input(shape=(32,32,3)))
-    model.add(Conv2D(int(2**(pos[0]*4+3)), (int(pos[1]*4)*2+1, int(pos[1]*4)*2+1), activation='relu', padding='same'))
+    model.add(Conv2D(int(2**(pos[0]*4+3)), (3,3), activation='relu', padding='same'))
     model.add(BatchNormalization())
     model.add(Flatten())
-    model.add(Dense(int(2**(pos[2]*5+4)), activation='relu'))
+    model.add(Dense(int(2**(pos[1]*5+4)), activation='relu'))
     model.add(Dropout(pos[3]))
-    model.add(Dense(100, activation='softmax'))
+    model.add(Dense(10, activation='softmax'))
 
 
     #model.summary()
     #plot_model(model, show_shapes=True)
 
-    model.compile(optimizer=Adam(learning_rate=0.001),
+    model.compile(optimizer=Adam(learning_rate=1e-4*pos[2]),
                   loss=CategoricalCrossentropy(),
                   metrics=['accuracy', TopKCategoricalAccuracy(k=2, name="Top2")])
     running = True
     epochs = 0
     best = 0
     while running:
-        history = model.fit(x_train, y_train_cat, batch_size=200, epochs = 5, validation_data=(x_valid, y_valid_cat))
+        history = model.fit(x_train, y_train_cat, batch_size=int(200*pos[3]**2), epochs = 10, validation_data=(x_valid, y_valid_cat))
         epochs += 5
         best = max(best, max(np.array(history.history['val_accuracy'])/np.array(history.history['val_loss']) ))
         if epochs >= 25:
@@ -117,7 +117,7 @@ def model_fitness(pos):
             running = False
     tensorflow.keras.backend.clear_session()
     return best
-"""
+
 pso_for_model = PSOSolver({
     "a1": 0.2,#acceleration number
     "a2": 0.4,#acceleration number
@@ -131,7 +131,7 @@ pso_for_model = PSOSolver({
 
 print("solution", pso_for_model.solve(20,True))
 exit()
-"""
+
 
 model = Sequential()
 model.add(Input(shape=(32, 32, 3)))
