@@ -1,3 +1,5 @@
+import copy
+
 import tensorflow
 import matplotlib.pyplot as plt
 import os
@@ -52,10 +54,10 @@ model_files = [
 ]
 
 model_files.sort(key=lambda f: os.path.getctime(f))
-for path in model_files:
+for filename in tqdm(model_files, desc = "evaluating models"):
     if filename.endswith('.keras'):
+        model_path = copy.copy(filename)
         data.append([])
-        model_path = os.path.join(MODEL_DIR, filename)
         filename = str(filename)[:filename.index(".keras")]
         filename = filename[filename.index("_") + 1:]
         while "_" in filename:
@@ -65,15 +67,64 @@ for path in model_files:
         #print(f'Loading model: {model_path}')
         model = tensorflow.keras.models.load_model(model_path)
         result = model.evaluate(x_test, y_test_cat, verbose = 0)
-        data[-1].append(result[0])
-        data[-1].append(result[1])
+        for i in result:
+            data[-1].append(i)
 data = np.array(data)
+
+x = range(len(model_files))
+plt.plot(x, data[:, 0], label = "Conv2D")
+plt.plot(x, data[:, 1], label = "Dense")
+plt.plot(x, data[:, 2], label = "Dropout")
+plt.plot(x, data[:, 3], label = "learning_rate")
+plt.plot(x, data[:, 4], label = "batch_size")
+plt.plot(x, data[:, 6], label = "accuracy")
+plt.xlabel("Номер моделі")
+plt.ylabel("Значення")
+plt.title("Нормалізовані значення параметрів і точності")
+plt.legend()
+plt.show()
+
 print(data.shape)
 data[:, 0] = np.floor(2**(data[:, 0]*3+3))
 data[:, 1] = np.floor(2**(data[:, 1]*3+3))
 data[:, 2] = data[:, 2]/2
 data[:, 3] = data[:, 3]*0.0001
 data[:, 4] = np.floor(2**(data[:, 4]*5+3))
+
+fig, axs = plt.subplots(6, 1, figsize=(12, 10), sharex=True)
+fig.suptitle("Фактичні значення", fontsize = 20)
+axs[0].plot(data[:, 0], label="Conv2D")
+axs[0].plot(data[:, 1], label="Dense")
+axs[0].set_yscale("log")
+axs[0].legend()
+axs[0].set_title("Кількість нейронів/фільтрів в шарах")
+
+axs[1].plot(data[:, 2] , label="Dropout")
+axs[1].legend()
+axs[1].set_title("Значення Dropout")
+
+axs[2].plot(data[:, 3] , label="LR")
+axs[2].legend()
+axs[2].set_title("Значення learning_rate")
+
+axs[3].plot(data[:, 4] , label="LR")
+axs[3].set_yscale("log")
+axs[3].legend()
+axs[3].set_title("Значення batch_size")
+
+axs[4].plot(data[:,-2], label="Точність")
+axs[4].plot(data[:,-1], label="Т2")
+axs[4].legend()
+axs[4].set_title("Точність та втрати")
+
+axs[5].plot(data[:,-3], label="Втрати")
+axs[5].set_yscale("log")
+axs[5].legend()
+axs[5].set_title("Втрати")
+
+plt.tight_layout()
+plt.show()
+
 
 
 
