@@ -45,8 +45,14 @@ y_test_cat = to_categorical(y_test)
 
 MODEL_DIR = 'models'
 data = []
-listdir = os.listdir(MODEL_DIR)
-for filename in tqdm(listdir, desc = "generating data from models"):
+model_files = [
+    os.path.join(MODEL_DIR, f)
+    for f in os.listdir(MODEL_DIR)
+    if f.endswith('.keras')
+]
+
+model_files.sort(key=lambda f: os.path.getctime(f))
+for path in model_files:
     if filename.endswith('.keras'):
         data.append([])
         model_path = os.path.join(MODEL_DIR, filename)
@@ -63,6 +69,11 @@ for filename in tqdm(listdir, desc = "generating data from models"):
         data[-1].append(result[1])
 data = np.array(data)
 print(data.shape)
+data[:, 0] = np.floor(2**(data[:, 0]*3+3))
+data[:, 1] = np.floor(2**(data[:, 1]*3+3))
+data[:, 2] = data[:, 2]/2
+data[:, 3] = data[:, 3]*0.0001
+data[:, 4] = np.floor(2**(data[:, 4]*5+3))
 
 
 
@@ -70,15 +81,15 @@ X = data[:, 3]
 Y = data[:, 4]
 Z = data[:, -2]
 
-# Створюємо регулярну сітку
+
 xi = np.linspace(X.min(), X.max(), 100)
 yi = np.linspace(Y.min(), Y.max(), 100)
 xi, yi = np.meshgrid(xi, yi)
 
-# Інтерполяція Z-координат
+
 zi = griddata((X, Y), Z, (xi, yi), method='cubic')
 
-# Побудова 3D-ландшафту
+
 fig = plt.figure(figsize=(10, 6))
 ax = fig.add_subplot(111, projection='3d')
 surf = ax.plot_surface(xi, yi, zi, cmap='viridis', edgecolor='none')
@@ -94,14 +105,13 @@ xi = np.linspace(X.min(), X.max(), 200)
 yi = np.linspace(Y.min(), Y.max(), 200)
 xi, yi = np.meshgrid(xi, yi)
 
-# Інтерполюємо Z
+
 zi = griddata((X, Y), Z, (xi, yi), method='cubic')
 
-# Уникаємо log(0)
 eps = 1e-8
 zi_log = np.log10(np.clip(zi, eps, None))
 
-# Побудова контурної мапи
+
 plt.figure(figsize=(10, 6))
 contour = plt.contourf(xi, yi, zi_log, levels=20, cmap='plasma')
 plt.scatter(X, Y, color='black', s=10, label='Data points')
