@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import matplotlib.cm as cm
 import numpy as np
+from concurrent.futures import ProcessPoolExecutor
 
 class GeneticSolver:
     def __init__(self, func, pop_size, children, dimensions, minmax, mutation_prob, mutation_pow, seeking_min = False):
@@ -28,6 +29,21 @@ class GeneticSolver:
         self.pop = self.pop[:self.pop_size] # залишити лише найкращі хромосоми у кількості pop_size штук
         return self.pop[0] # повернути найкращу хромосому
 
+    def select_mp(self):
+        with ProcessPoolExecutor(max_workers=2) as executor:
+            fitness_values = list(executor.map(self.func, self.pop))
+
+        # Поєднати хромосоми з їхніми значеннями фітнес-функції
+        combined = list(zip(self.pop, fitness_values))
+
+        # Відсортувати за значенням фітнес-функції
+        combined.sort(key=lambda x: x[1], reverse=not self.seeking_min)
+
+        # Оновити популяцію, залишивши лише найкращі хромосоми
+        self.pop = [chrom for chrom, _ in combined[:self.pop_size]]
+
+        return self.pop[0]  # Повернути найкращу хромосому
+
     def crossover(self):
         for _ in range(self.children): # зробити children нових хромосом
             # псевдовипадкова генерація індексів батьків
@@ -47,9 +63,9 @@ class GeneticSolver:
                     self.pop[i][d] = min(self.minmax[d][1], max(self.minmax[d][0], self.pop[i][d]))
 
     def iter(self):
-        self.select()
         self.crossover()
         self.mutate()
+        self.select()
 
     def solve(self, iterations, progressbar = True, epsilon_timeout = float("inf"), epsilon = 0):
         if progressbar:
@@ -70,7 +86,6 @@ class GeneticSolver:
                 epsilon_timeout_counter += 1
                 if epsilon_timeout_counter > epsilon_timeout:
                     break
-        self.select()
         return (self.func(self.pop[0]), self.pop[0])
 
     def solve_stats(self, iterations, progressbar = True, epsilon_timeout = float("inf"), epsilon = 0, show = False):
@@ -80,13 +95,16 @@ class GeneticSolver:
         else:
             iterator = range(iterations)
         epsilon_timeout_counter = 0
-
+        self.select()
+        y.append(self.func(self.pop[0]))
         for _ in iterator:
             old_best = self.pop[0]
-            self.select()
-            y.append(self.func(self.pop[0]))
+
+
             self.crossover()
             self.mutate()
+            self.select()
+            y.append(self.func(self.pop[0]))
 
             if self.func(self.pop[0]) - self.func(old_best) >= epsilon and not self.seeking_min:
                 epsilon_timeout_counter = 0

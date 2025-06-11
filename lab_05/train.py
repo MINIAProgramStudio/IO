@@ -26,7 +26,7 @@ import numpy as np
 
 from PSO import PSOSolver
 
-print("Num GPUs Available: ", len(tensorflow.config.list_physical_devices('GPU')))
+
 
 label_names = [
     "airplane",   # 0
@@ -42,19 +42,6 @@ label_names = [
 ]
 
 (x_train, y_train), (x_test, y_test) = cifar10.load_data()
-plt.figure(figsize=(12, 12))
-for i in range(10):
-    ax = plt.subplot(5, 2, i + 1)
-    plt.imshow(np.array(x_train[i]))
-    class_index = int(y_train[i])
-    plt.title(label_names[class_index], fontsize=8)
-    plt.axis("off")
-plt.show()
-# The 10 different classes represent airplanes, cars, birds, cats, deer, dogs, frogs, horses, ships, and trucks.
-
-print(x_train.shape)
-print(x_test.shape)
-
 x_train = x_train.astype('float32')
 x_test = x_test.astype('float32')
 
@@ -78,19 +65,11 @@ y_valid_cat = y_train_cat[40000:]
 
 x_train = x_train[:40000]
 y_train_cat = y_train_cat[:40000]
-
-print(x_valid.shape)
-
-print(y_valid_cat.shape)
-
-print(x_train.shape)
-
-print(x_test.shape)
-
 def model_fitness(pos):
     MODEL_SAVE_PATH = "models/pos"
     for p in pos:
-        MODEL_SAVE_PATH += "_"+str(round(p,10))
+        MODEL_SAVE_PATH += "_"+str(round(p,5))
+    MODEL_SAVE_PATH += ".keras"
     callbacks = [
         tensorflow.keras.callbacks.EarlyStopping(
             monitor='val_loss',
@@ -108,21 +87,21 @@ def model_fitness(pos):
     print("training", pos)
     model = Sequential()
     model.add(Input(shape=(32,32,3)))
-    model.add(Conv2D(int(2**(pos[0]*4+3)), (3,3), activation='relu', padding='same'))
+    model.add(Conv2D(int(2**(pos[0]*3+3)), (3,3), activation='relu', padding='same'))
     model.add(BatchNormalization())
     model.add(Flatten())
-    model.add(Dense(int(2**(pos[1]*5+4)), activation='relu'))
-    model.add(Dropout(pos[3]))
+    model.add(Dense(int(2**(pos[1]*3+3)), activation='relu'))
+    model.add(Dropout(pos[2]/2))
     model.add(Dense(10, activation='softmax'))
 
 
     #model.summary()
     #plot_model(model, show_shapes=True)
 
-    model.compile(optimizer=Adam(learning_rate=1e-4*pos[2]),
+    model.compile(optimizer=Adam(learning_rate=1e-4*pos[3]),
                   loss=CategoricalCrossentropy(),
                   metrics=['accuracy', TopKCategoricalAccuracy(k=2, name="Top2")])
-    model.fit(x_train, y_train_cat, batch_size=int(2**(pos[3]*5+3)), epochs = 50, validation_data=(x_valid, y_valid_cat), callbacks=callbacks)
+    model.fit(x_train, y_train_cat, batch_size=int(2**(pos[4]*5+3)), epochs = 20, validation_data=(x_valid, y_valid_cat), callbacks=callbacks, verbose=0)
     result = model.evaluate(x_test, y_test_cat)
     tensorflow.keras.backend.clear_session()
     return result[1]/result[0]
@@ -140,106 +119,24 @@ pso_for_model = PSOSolver({
 
 print("solution", pso_for_model.solve(20,True))
 exit()"""
-genetic_for_model = GeneticSolver(
-    model_fitness,
-    5,
-    5,
-    4,
-    np.array([[0,1],[0,1],[0,1],[0,1],]),
-    0.1,
-    0.1,
-    seeking_min = False
-)
-print(genetic_for_model.solve(3, progressbar=True))
-exit()
-
-
-model = Sequential()
-model.add(Input(shape=(32, 32, 3)))
-model.add(Conv2D(128, (7, 7), activation='relu',padding='same'))
-model.add(MaxPooling2D(2))
-model.add(BatchNormalization())
-model.add(Dropout(0.2))
-model.add(Conv2D(256, (7, 7), activation='relu',padding='same'))
-model.add(MaxPooling2D(2))
-model.add(BatchNormalization())
-model.add(Dropout(0.2))
-model.add(Conv2D(512, (7, 7), activation='relu',padding='same'))
-model.add(MaxPooling2D(3))
-model.add(BatchNormalization())
-model.add(Dropout(0.2))
-model.add(Flatten())
-model.add(Dense(200, activation='relu'))
-model.add(Dropout(0.2))
-model.add(Dense(10, activation='softmax'))
-
-#model = tensorflow.keras.models.load_model('cifar100.keras')
-
-model.summary()
-#plot_model(model, show_shapes=True)
-
-model.compile(optimizer=Adam(learning_rate=0.001),
-              loss=CategoricalCrossentropy(),
-              metrics=['accuracy', TopKCategoricalAccuracy(k=2, name="Top2")])
-
-history = model.fit(x_train, y_train_cat, batch_size = 100, epochs = 10, validation_data=(x_valid, y_valid_cat))
-
-model.save("cifar100.keras")
-
-#model = tensorflow.keras.models.load_model("cifar100.keras")
-#history = model.fit(x_train, y_train_cat, batch_size=200, epochs = 250, validation_data=(x_valid, y_valid_cat))
-#model.save("cifar100.keras")
-plt.plot(history.history['loss'], label = "loss")
-plt.plot(history.history['val_loss'], label = "val_loss")
-plt.legend()
-plt.show()
-
-plt.plot(history.history['accuracy'], label = "accuracy")
-plt.plot(history.history['val_accuracy'], label = "val_accuracy")
-plt.legend()
-plt.show()
-
-model.evaluate(x_test, y_test_cat)
-
-predictions = model.predict(x_test)
-
-
-
-#Predict
-y_prediction_cat = model.predict(x_test)
-y_prediction = np.argmax(y_prediction_cat, axis=1)
-
-print(y_test.shape)
-print(y_prediction_cat.shape)
-
-print(predictions.shape)
-print(predictions[0])
-
-
-print(np.argmax(predictions[0]))
-
-print(np.argmax(y_test[0]))
-
-print(x_test.shape)
-
-plt.imshow(x_test[0])
-plt.title('Class: ' + str(label_names[y_test[0][0]]))
-plt.show()
-
-
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-
-# 1. Створення Confusion Matrix
-cm = confusion_matrix(y_test, y_prediction)
-
-# 2. Відображення без чисел
-fig, ax = plt.subplots(figsize=(10, 10))
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_names)
-disp.plot(include_values=False,  # <- не показувати числа
-          xticks_rotation=90,
-          cmap='Blues',
-          ax=ax)
-plt.title("Confusion Matrix")
-plt.grid(False)
-plt.tight_layout()
-plt.show()
+if __name__ == "__main__":
+    print("Num GPUs Available: ", len(tensorflow.config.list_physical_devices('GPU')))
+    plt.figure(figsize=(12, 12))
+    for i in range(10):
+        ax = plt.subplot(5, 2, i + 1)
+        plt.imshow(np.array(x_train[i]))
+        class_index = int(y_train[i])
+        plt.title(label_names[class_index], fontsize=8)
+        plt.axis("off")
+    plt.show()
+    genetic_for_model = GeneticSolver(
+        model_fitness,
+        10,
+        10,
+        5,
+        np.array([[0,1],[0,1],[0,1],[0,1],[0,1]]),
+        0.05,
+        0.1,
+        seeking_min = False
+    )
+    genetic_for_model.solve_stats(25, True, show = True, epsilon_timeout=3, epsilon=1e-2)
