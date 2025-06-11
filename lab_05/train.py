@@ -1,6 +1,7 @@
 import tensorflow
 import matplotlib.pyplot as plt
 import PSO
+from GeneticSolver import GeneticSolver
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
@@ -87,6 +88,23 @@ print(x_train.shape)
 print(x_test.shape)
 
 def model_fitness(pos):
+    MODEL_SAVE_PATH = "models/pos"
+    for p in pos:
+        MODEL_SAVE_PATH += "_"+str(round(p,10))
+    callbacks = [
+        tensorflow.keras.callbacks.EarlyStopping(
+            monitor='val_loss',
+            patience=3,
+            restore_best_weights=True
+        ),
+        tensorflow.keras.callbacks.ModelCheckpoint(
+            MODEL_SAVE_PATH,
+            monitor='val_loss',
+            save_best_only=True,
+            save_freq='epoch'
+        )
+    ]
+    tensorflow.random.set_seed(0)
     print("training", pos)
     model = Sequential()
     model.add(Input(shape=(32,32,3)))
@@ -104,20 +122,11 @@ def model_fitness(pos):
     model.compile(optimizer=Adam(learning_rate=1e-4*pos[2]),
                   loss=CategoricalCrossentropy(),
                   metrics=['accuracy', TopKCategoricalAccuracy(k=2, name="Top2")])
-    running = True
-    epochs = 0
-    best = 0
-    while running:
-        history = model.fit(x_train, y_train_cat, batch_size=int(200*pos[3]**2), epochs = 10, validation_data=(x_valid, y_valid_cat))
-        epochs += 5
-        best = max(best, max(np.array(history.history['val_accuracy'])/np.array(history.history['val_loss']) ))
-        if epochs >= 25:
-            running = False
-        if history.history['accuracy'][-1] + history.history['accuracy'][-2] - history.history['val_accuracy'][-1] - history.history['val_accuracy'][-2] > 0.1:
-            running = False
+    model.fit(x_train, y_train_cat, batch_size=int(2**(pos[3]*5+3)), epochs = 50, validation_data=(x_valid, y_valid_cat), callbacks=callbacks)
+    result = model.evaluate(x_test, y_test_cat)
     tensorflow.keras.backend.clear_session()
-    return best
-
+    return result[1]/result[0]
+"""
 pso_for_model = PSOSolver({
     "a1": 0.2,#acceleration number
     "a2": 0.4,#acceleration number
@@ -130,6 +139,18 @@ pso_for_model = PSOSolver({
 }, model_fitness, seeking_min=False)
 
 print("solution", pso_for_model.solve(20,True))
+exit()"""
+genetic_for_model = GeneticSolver(
+    model_fitness,
+    5,
+    5,
+    4,
+    np.array([[0,1],[0,1],[0,1],[0,1],]),
+    0.1,
+    0.1,
+    seeking_min = False
+)
+print(genetic_for_model.solve(3, progressbar=True))
 exit()
 
 
