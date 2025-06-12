@@ -115,7 +115,7 @@ axs[3].set_title("Значення batch_size")
 axs[4].plot(data[:,-2], label="Точність")
 axs[4].plot(data[:,-1], label="Т2")
 axs[4].legend()
-axs[4].set_title("Точність та втрати")
+axs[4].set_title("Точність")
 
 axs[5].plot(data[:,-3], label="Втрати")
 axs[5].set_yscale("log")
@@ -146,10 +146,10 @@ ax = fig.add_subplot(111, projection='3d')
 surf = ax.plot_surface(xi, yi, zi, cmap='viridis', edgecolor='none')
 ax.scatter(X, Y, Z, color='red', s=10, label='Data points')
 fig.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
-plt.title('3D Landscape from (X, Y, Z) points')
+ax.set_xlabel('Learning rate')
+ax.set_ylabel('Batch size')
+ax.set_zlabel('Accuracy')
+plt.title('3D ландшафт')
 plt.show()
 
 xi = np.linspace(X.min(), X.max(), 200)
@@ -167,8 +167,142 @@ plt.figure(figsize=(10, 6))
 contour = plt.contourf(xi, yi, zi_log, levels=20, cmap='plasma')
 plt.scatter(X, Y, color='black', s=10, label='Data points')
 plt.colorbar(contour, label='log10(Z)')
-plt.xlabel('X')
-plt.ylabel('Y')
-plt.title('Logarithmic Contour Map of Z')
+plt.xlabel('Learning rate')
+plt.ylabel('Batch size')
+plt.title('Log accuracy')
+plt.tight_layout()
+plt.show()
+
+
+X = data[:, 0]
+Y = data[:, 1]
+
+xi = np.linspace(X.min(), X.max(), 200)
+yi = np.linspace(Y.min(), Y.max(), 200)
+xi, yi = np.meshgrid(xi, yi)
+
+
+zi = griddata((X, Y), Z, (xi, yi), method='cubic')
+
+eps = 1e-8
+zi_log = np.log10(np.clip(zi, eps, None))
+
+
+plt.figure(figsize=(10, 6))
+contour = plt.contourf(xi, yi, zi_log, levels=20, cmap='plasma')
+plt.scatter(X, Y, color='black', s=10, label='Data points')
+plt.colorbar(contour, label='log10(Z)')
+plt.xlabel('Conv2D')
+plt.ylabel('Dense')
+plt.title('Log accuracy')
+plt.tight_layout()
+plt.show()
+
+X = data[:, 0] + data[:, 1]
+Y = data[:, 2]
+
+xi = np.linspace(X.min(), X.max(), 200)
+yi = np.linspace(Y.min(), Y.max(), 200)
+xi, yi = np.meshgrid(xi, yi)
+
+
+zi = griddata((X, Y), Z, (xi, yi), method='cubic')
+
+eps = 1e-8
+zi_log = np.log10(np.clip(zi, eps, None))
+
+
+plt.figure(figsize=(10, 6))
+contour = plt.contourf(xi, yi, zi_log, levels=20, cmap='plasma')
+plt.scatter(X, Y, color='black', s=10, label='Data points')
+plt.colorbar(contour, label='log10(Z)')
+plt.xlabel('Conv2D+Dense')
+plt.ylabel('Dropout')
+plt.title('Log accuracy')
+plt.tight_layout()
+plt.show()
+
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+id = np.argmin(data[:,-3])
+model_path = model_files[id]
+print(model_path)
+model = tensorflow.keras.models.load_model(model_path)
+# 1. Створення Confusion Matrix
+y_prediction_cat = model.predict(x_test)
+y_prediction = np.argmax(y_prediction_cat, axis=1)
+cm = confusion_matrix(y_test, y_prediction)
+
+# 2. Відображення без чисел
+fig, ax = plt.subplots(figsize=(10, 10))
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_names)
+disp.plot(include_values=False,  # <- не показувати числа
+          xticks_rotation=90,
+          cmap='Blues',
+          ax=ax)
+plt.title("Confusion Matrix best loss")
+plt.grid(False)
+plt.tight_layout()
+plt.show()
+
+id = np.argmax(data[:,-2])
+model_path = model_files[id]
+print(model_path)
+model = tensorflow.keras.models.load_model(model_path)
+# 1. Створення Confusion Matrix
+y_prediction_cat = model.predict(x_test)
+y_prediction = np.argmax(y_prediction_cat, axis=1)
+cm = confusion_matrix(y_test, y_prediction)
+
+# 2. Відображення без чисел
+fig, ax = plt.subplots(figsize=(10, 10))
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_names)
+disp.plot(include_values=False,  # <- не показувати числа
+          xticks_rotation=90,
+          cmap='Blues',
+          ax=ax)
+plt.title("Confusion Matrix best acc.")
+plt.grid(False)
+plt.tight_layout()
+plt.show()
+
+id = np.argmax(data[:,-2]/data[:,-3])
+model_path = model_files[id]
+print(model_path)
+model = tensorflow.keras.models.load_model(model_path)
+# 1. Створення Confusion Matrix
+y_prediction_cat = model.predict(x_test)
+y_prediction = np.argmax(y_prediction_cat, axis=1)
+cm = confusion_matrix(y_test, y_prediction)
+
+# 2. Відображення без чисел
+fig, ax = plt.subplots(figsize=(10, 10))
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_names)
+disp.plot(include_values=False,  # <- не показувати числа
+          xticks_rotation=90,
+          cmap='Blues',
+          ax=ax)
+plt.title("Confusion Matrix best acc./loss")
+plt.grid(False)
+plt.tight_layout()
+plt.show()
+
+id = np.argmax(data[:,-1])
+model_path = model_files[id]
+print(model_path)
+model = tensorflow.keras.models.load_model(model_path)
+# 1. Створення Confusion Matrix
+y_prediction_cat = model.predict(x_test)
+y_prediction = np.argmax(y_prediction_cat, axis=1)
+cm = confusion_matrix(y_test, y_prediction)
+
+# 2. Відображення без чисел
+fig, ax = plt.subplots(figsize=(10, 10))
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_names)
+disp.plot(include_values=False,  # <- не показувати числа
+          xticks_rotation=90,
+          cmap='Blues',
+          ax=ax)
+plt.title("Confusion Matrix best top2")
+plt.grid(False)
 plt.tight_layout()
 plt.show()
